@@ -19,6 +19,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.feature_extraction import FeatureHasher
 from feature_engine.categorical_encoders import MeanCategoricalEncoder, OneHotCategoricalEncoder
 from feature_engine import missing_data_imputers as mdi
 from hyperopt import hp, fmin, tpe, STATUS_OK, Trials
@@ -31,7 +32,7 @@ pd.set_option('display.max_columns', None)
 pd.options.display.float_format = '{:.5f}'.format
 
 
-raw_data = pd.read_csv('Data/house_data_details_eda.csv')
+raw_data = pd.read_csv('RealEstateAVM/Data/house_data_details_eda.csv')
 df = raw_data.copy()
 df[['month', 'year']] = df[['month', 'year']].astype(str)
 gdf = gpd.GeoDataFrame(df, geometry=[Point(xy)
