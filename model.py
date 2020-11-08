@@ -23,7 +23,7 @@ from sklearn.feature_extraction import FeatureHasher
 from feature_engine.categorical_encoders import MeanCategoricalEncoder, OneHotCategoricalEncoder
 from feature_engine import missing_data_imputers as mdi
 from hyperopt import hp, fmin, tpe, STATUS_OK, Trials
-
+import xgboost as xgb
 
 import warnings
 warnings.filterwarnings('ignore')
