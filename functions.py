@@ -22,8 +22,8 @@ def load_obj(name):
 
 def calculate_distances(df, kc):
     for i in range(len(kc)):
-        df['distance_' + str(i)] = np.sqrt((df.latitude -
-                                            kc[i][0])**2 + (df.longitude - kc[i][1])**2)
+        df['distance_' + str(i)] = (df.latitude -
+                                    kc[i][0])**2 + (df.longitude - kc[i][1])**2
     df = df.drop(['longitude', 'latitude'], axis=1)
     return df
 
@@ -121,27 +121,32 @@ def find_nearest_properties(neighborhood_option, bedrooms=2, bathrooms=2, home_s
     neighborhoods = pd.read_csv('Data/Neighborhoods_final.csv')
     # load the model
     loaded_model = pickle.load(open("model.pickle.dat", "rb"))
+    cols_when_model_builds = loaded_model.get_booster().feature_names
     # Load the fitted kmeans object
     kmeans = load_obj('kmeans_neighborhood')
     kc = kmeans.cluster_centers_
     # This  is the geocoordinates of the neighborhood selected
     map_filter = neighborhoods.loc[neighborhoods['neighborhood']
-                                   == neighborhood_option, ['longitude', 'latitude']]
+                                   == neighborhood_option]
+    map_filter.loc[0, ['home_size', 'lot_size', 'bedrooms', 'bathrooms']] = [
+        home_size, lot_size, bedrooms, bathrooms]
     lng = map_filter.longitude
     lat = map_filter.latitude
-    house_params = pd.DataFrame(columns=['longitude', 'latitude', 'bedrooms', 'bathrooms', 'home_size', 'lot_size'],
-                                data=[[lng, lat, bedrooms, bathrooms, lot_size, home_size]])
-    house_params = house_params.astype(float)
-    house_params = calculate_distances(house_params, kc)
-    est_price = '${:,.2f}'.format(int(loaded_model.predict(house_params)**2))
+    map_filter = calculate_distances(map_filter, kc)
+    map_filter.drop(['neighborhood', 'sale_price'], axis=1, inplace=True)
+    map_filter = map_filter[cols_when_model_builds]
+    house_params = map_filter.astype(float)
+
+    est_price = int(np.exp(loaded_model.predict(house_params)))
+    clean_price = '${:,.2f}'.format(est_price)
     # Bring in similar houses
     houses = find_similar_properties(neighborhood_option, bedrooms, bathrooms)
 
     if houses.shape[0] == 0:
         st.header(f'We cannot find any houses matching that description.')
     else:
-        results = f"Estimated price: **{est_price}** "
-        mes1 = f"We have found {houses.shape[0]} houses with a similar description near {neighborhood_option}*(You may have to zoom out to see it)*"
+        results = f"Estimated price: **{clean_price}** "
+        mes1 = f"We have found {houses.shape[0]} houses with a similar description near {neighborhood_option}*(You may have to zoom out to see all the houses)*"
         st.markdown(results)
         st.markdown(mes1)
 
@@ -149,10 +154,10 @@ def find_nearest_properties(neighborhood_option, bedrooms=2, bathrooms=2, home_s
         lambda x: datetime.datetime.strptime(x, '%Y-%m-%d').strftime('%m/%d/%Y'))
     houses['sale_price'] = houses['sale_price'].apply(
         lambda x: '${:,.2f}'.format(x))
-    la = folium.Map(location=map_filter,
-                    zoom_start=12,
+    la = folium.Map(location=[lng, lat],
+                    zoom_start=13,
                     min_zoom=8)
-    folium.Marker(location=map_filter,
+    folium.Marker(location=[lng, lat],
                   popup=neighborhood_option).add_to(la)
 
     for index, row in houses.iterrows():
