@@ -46,8 +46,9 @@ else:
         label="Lot Size (You can also type in a numbers)", format="%i", value=2500, step=250)
     home_size = st.sidebar.number_input(
         label="Home Size (You can also type in a number)", format="%i", value=1000, step=250)
-    search = st.sidebar.button('Search')
-
-    if search:
-        find_nearest_properties(neighborhood_option, bedrooms,
-                                bathrooms, lot_size, home_size)
+    #search = st.sidebar.button('Search')
+    find_nearest_properties(neighborhood_option, bedrooms,
+                            bathrooms, lot_size, home_size)
+    # if search:
+    # find_nearest_properties(neighborhood_option, bedrooms,
+    #                       bathrooms, lot_size, home_size)

@@ -43,42 +43,6 @@ def search_function(map_filter, neighborhood_option):
     folium_static(la)
 
 
-def first():
-    st.title("How much is it really going to cost to buy a house in Los Angeles?")
-
-    st.sidebar.write('<strong>Describe your ideal house</strong>',
-                     unsafe_allow_html=True)
-
-    # Load in the data
-    neighborhoods = pd.read_csv('Data/la_neighborhoods.csv')
-    #los_angeles = [34.052235, -118.243683]
-    #la = folium.Map(location=los_angeles)
-
-    neighborhood_option = st.selectbox(
-        'Select a neighborhood you are interested in.',
-        neighborhoods['neighborhood'])
-
-    los_angeles = [34.052235, -118.243683]
-    la = folium.Map(location=los_angeles)
-
-    map_filter = neighborhoods.loc[neighborhoods['neighborhood']
-                                   == neighborhood_option, ['longitude', 'latitude']]
-
-    left_column, right_column = st.sidebar.beta_columns(2)
-
-    bedrooms = left_column.slider('Bedrooms', 0, 8, 2)
-    bathrooms = right_column.slider('Bathrooms', 0, 8, 2)
-
-    search = st.sidebar.button('Search')
-
-    if search:
-        la = functions.search_function(map_filter, neighborhood_option)
-        st.write(f'Finding houses near {neighborhood_option}')
-        # folium_static(la)
-
-    folium_static(la)
-
-
 def find_nearest_hoods(neighborhood_option):
     hoods = pd.read_csv('Data/Neighborhoods_final.csv')
     lat = float(hoods.loc[hoods['neighborhood'] ==
@@ -126,19 +90,17 @@ def find_nearest_properties(neighborhood_option, bedrooms=2, bathrooms=2, home_s
     kmeans = load_obj('kmeans_neighborhood')
     kc = kmeans.cluster_centers_
     # This  is the geocoordinates of the neighborhood selected
-    map_filter = neighborhoods.loc[neighborhoods['neighborhood']
-                                   == neighborhood_option]
-    map_filter.loc[0, ['home_size', 'lot_size', 'bedrooms', 'bathrooms']] = [
+    neighborhoods = neighborhoods.loc[neighborhoods['neighborhood']
+                                      == neighborhood_option]
+    neighborhoods[['home_size', 'lot_size', 'bedrooms', 'bathrooms']] = [
         home_size, lot_size, bedrooms, bathrooms]
-    lng = map_filter.longitude
-    lat = map_filter.latitude
-    map_filter = calculate_distances(map_filter, kc)
-    map_filter.drop(['neighborhood', 'sale_price'], axis=1, inplace=True)
-    map_filter = map_filter[cols_when_model_builds]
-    house_params = map_filter.astype(float)
-
-    est_price = int(np.exp(loaded_model.predict(house_params)))
-    clean_price = '${:,.2f}'.format(est_price)
+    lng = neighborhoods.longitude
+    lat = neighborhoods.latitude
+    map_filter = calculate_distances(neighborhoods, kc)
+    neighborhoods = neighborhoods[cols_when_model_builds]
+    neighborhoods = neighborhoods.astype(float)
+    est_price = int(np.exp(loaded_model.predict(neighborhoods)))
+    clean_price = '${:,}'.format(est_price)
     # Bring in similar houses
     houses = find_similar_properties(neighborhood_option, bedrooms, bathrooms)
 
