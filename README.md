@@ -29,7 +29,7 @@ In order to prepare the data for the model I needed to
 * Convert the rest of the features into and appropriate data type(i.e Date converts to Date object).
 * Merged the sales history data the original dataframe.
   * Adjusted the sale price for inflation
-  ![](images/sale_price_adjusted.png)
+  ![](Images/sale_price_adjusted.png)
 * Dummy Encoded the categorical features
   * crime_index
   * school_quality
@@ -37,11 +37,11 @@ In order to prepare the data for the model I needed to
 ### **Geographic Information System**
 * Used KMeans clustering to identify 9 clusters around Los Angeles.
 * Calculated the distance between each house and the cluster centers to quantify the value of the location of the house.
-![](images/clusters.png)
+![](Images/clusters.png)
 
 ### **Exploratory Data Analysis**
 The sale price was heavily skewed to the right so I used a Power Transformer on the sale price to approximate a normal distribution
-![](images/sale_price_power_transformer.png)
+![](Images/sale_price_power_transformer.png)
 
 ### **Model Building**
 * Used a XGBoost regressor, Random Forest Regressor and a linear regression model.
