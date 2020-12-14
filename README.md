@@ -41,7 +41,7 @@ In order to prepare the data for the model I needed to
 
 ### **Exploratory Data Analysis**
 The sale price was heavily skewed to the right so I used a Power Transformer on the sale price to approximate a normal distribution
-![](Images/sale_price_power_transformer.png)
+![](Images/sale_price_power_transformation.png)
 
 ### **Model Building**
 * Used a XGBoost regressor, Random Forest Regressor and a linear regression model.
