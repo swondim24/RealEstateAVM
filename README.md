@@ -12,7 +12,7 @@
 **For Web Framework Requirements:** `pip isntall -r requirements.txt`</br>
 **Data:** http://realtytrac.com/</br>
 
-#### **Data Collection**</br>
+### **Data Collection**</br>
 Periodically scrape data from RealyTrac and obtained 25 features for over 19,000 unique properties while also retrieving sales history for most of those properties. Some of the features include...</br>
 * Geolocation
 * Home Size
@@ -21,7 +21,7 @@ Periodically scrape data from RealyTrac and obtained 25 features for over 19,000
 * Bathrooms
 * Neighborhood Information (school quality, crime index, etc.)
 
-#### **Data Cleaning**</br>
+### **Data Cleaning**</br>
 In order to prepare the data for the model I needed to 
 * Parse out bedroom and bathroom into their own columns.
 * Standardize the unit used for measuring home size and lot size by converting all properties values that were listed in acres into sqft.
@@ -29,18 +29,30 @@ In order to prepare the data for the model I needed to
 * Convert the rest of the features into and appropriate data type(i.e Date converts to Date object).
 * Merged the sales history data the original dataframe.
   * Adjusted the sale price for inflation
+  ![](images/sale_price_adjusted.png)
 * Dummy Encoded the categorical features
   * crime_index
   * school_quality
 
-#### **Geographic Information System**
+### **Geographic Information System**
 * Used KMeans clustering to identify 9 clusters around Los Angeles.
-* Calculated the distance between each house and the cluster centers to quantify the value of the location of the house
-*Will include images and more information soon*
+* Calculated the distance between each house and the cluster centers to quantify the value of the location of the house.
+![](images/clusters.png)
 
-#### **Exploratory Data Analysis**
+### **Exploratory Data Analysis**
+The sale price was heavily skewed to the right so I used a Power Transformer on the sale price to approximate a normal distribution
+![](images/sale_price_power_transformer.png)
 
+### **Model Building**
+* Used a XGBoost regressor, Random Forest Regressor and a linear regression model.
+ * Wanted to use all models to compare performance.
+* Split the dataset into train and test set and since the dataset was large, I decided to use a validation set when tuning the hyperparameters.
+* Used Mean Absolute Percent Error (MAPE) as the evaluating metric.
 
+### **Model Performance**
+* XGBoost Regressor:
+* Random Forest Regressor:
+* Linear Model:
 
-Findings</br>
-Conclusion
+### Productionization
+Built an application that estimates the prices of houses based on a number of features. The application allows the user to get a good idea of the home buying process in Los Angeles. I deployed the application using the Streamlit Framework.
