@@ -43,7 +43,7 @@ def monthsfromnow(months, from_date=None):
 
 
 def find_nearest_hoods(neighborhood_option):
-    hoods = pd.read_csv('Data/Neighborhoods_final.csv')
+    hoods = pd.read_csv('../Data/Neighborhoods_final.csv')
     lat = float(hoods.loc[hoods['neighborhood'] ==
                           neighborhood_option, 'latitude'])
     lng = float(hoods.loc[hoods['neighborhood'] ==
@@ -58,8 +58,8 @@ def find_nearest_hoods(neighborhood_option):
 
 
 def find_similar_properties(neighborhood_option, bedrooms, bathrooms, lot_size, home_size, num=5.0):
-    neighborhoods = pd.read_csv('Data/Neighborhoods_final.csv')
-    houses = pd.read_csv('Data/houses_neighborhood_info.csv')
+    neighborhoods = pd.read_csv('../Data/Neighborhoods_final.csv')
+    houses = pd.read_csv('../Data/houses_neighborhood_info.csv')
     near = find_nearest_hoods(neighborhood_option)
     hood_lat = float(neighborhoods.loc[neighborhoods['neighborhood'] ==
                                        neighborhood_option, 'latitude'])
@@ -74,7 +74,15 @@ def find_similar_properties(neighborhood_option, bedrooms, bathrooms, lot_size, 
     pred = int(kmeans.predict(
         np.array([[bedrooms, bathrooms, lot_size, home_size]])))
 
-    houses = houses.loc[houses['cluster'] == pred, :]
+    houses = houses.loc[houses['cluster'] == pred, :].reset_index(drop=True)
+    houses = houses.rename(columns={'neighborhood': 'Neighborhood',
+                                    'lot_size': 'Lot Size',
+                                    'home_size': 'Home Size',
+                                    'bedrooms': 'Bedrooms',
+                                    'bathrooms': 'Bathrooms',
+                                    'date': 'Date',
+                                    'sale_price': 'Sale Price'})
+    houses.index = np.arange(1, len(houses) + 1)
 
     return houses
 
@@ -91,12 +99,12 @@ def calculate_mortgage(est_price, down_payment, loan_term, interest_rate):
 
 def find_nearest_properties(neighborhood_option, bedrooms=2, bathrooms=2, home_size=1500, lot_size=5000):
 
-    neighborhoods = pd.read_csv('Data/Neighborhoods_final.csv')
+    neighborhoods = pd.read_csv('../Data/Neighborhoods_final.csv')
     # load the model
-    loaded_model = pickle.load(open("model.pickle.dat", "rb"))
+    loaded_model = pickle.load(open("../model.pickle.dat", "rb"))
     cols_when_model_builds = loaded_model.get_booster().feature_names
     # Load the fitted kmeans object
-    kmeans = load_obj('kmeans_neighborhood')
+    kmeans = load_obj('../kmeans_neighborhood')
     kc = kmeans.cluster_centers_
     # This  is the geocoordinates of the neighborhood selected
     neighborhoods = neighborhoods.loc[neighborhoods['neighborhood']
@@ -112,7 +120,7 @@ def find_nearest_properties(neighborhood_option, bedrooms=2, bathrooms=2, home_s
     clean_price = '${:,}'.format(est_price)
     # Bring in similar houses
     houses = find_similar_properties(
-        neighborhood_option, bedrooms, bathrooms, lot_size, home_size, 4)
+        neighborhood_option, bedrooms, bathrooms, lot_size, home_size, 7)
 
     if houses.shape[0] == 0:
         st.header(f'We cannot find any houses matching that description.')
@@ -123,9 +131,9 @@ def find_nearest_properties(neighborhood_option, bedrooms=2, bathrooms=2, home_s
         st.markdown(mes1)
         st.markdown('*(You may have to zoom out to see all the houses)*')
 
-    houses['date'] = houses['date'].apply(
+    houses['Date'] = houses['Date'].apply(
         lambda x: datetime.datetime.strptime(x, '%Y-%m-%d').strftime('%m/%d/%Y'))
-    houses['sale_price'] = houses['sale_price'].apply(
+    houses['Sale Price'] = houses['Sale Price'].apply(
         lambda x: '${:,.2f}'.format(x))
     la = folium.Map(location=[lng, lat],
                     zoom_start=13,
@@ -134,83 +142,16 @@ def find_nearest_properties(neighborhood_option, bedrooms=2, bathrooms=2, home_s
                   popup=neighborhood_option).add_to(la)
 
     for index, row in houses.iterrows():
-        popup = 'Sale Price: ' + \
-            str(row['sale_price']) + '<br>' + 'Sell Date: ' + row['date'] + '<br > ' + \
-            'Neighborhood: ' + row['neighborhood'] + '<br >' + \
-            'Bedrooms: ' + str(int(row['bedrooms'])) + '<br >' + \
-            'Bathrooms: ' + str(int(row['bathrooms'])) + '<br>' +\
-            'Home Size: ' + str(int(row['home_size'])) + ' sqft' + '<br >' + \
-            'Lot Size: ' + str(int(row['lot_size'])) + ' sqft'
+        popup = str(index) + ") " + str(row['Sale Price'])
         folium.Marker(location=row[['latitude', 'longitude']],
                       popup=popup,
                       icon=folium.Icon(color='lightgray', icon='home', ico_size=(3, 3))).add_to(la)
 
     folium_static(la)
-    return est_price
-
-def calculate_total_interest(est_price, down_payment, interest_rate, loan_term):
-
-    borrowed = est_price - down_payment
-    interest_rate /= 100
-    monthly_interest_rate = (1 + interest_rate)**(1 / 12) - 1
-    total_payments = loan_term * 12
-    monthly_payment = (borrowed * monthly_interest_rate) / \
-        (1 - (1 + monthly_interest_rate)**-total_payments)
-
-    first_interest_payment = borrowed * monthly_interest_rate
-    first_principal_paid = monthly_payment - first_interest_payment
-
-    schedule = pd.DataFrame({
-
-        'payments': list(range(1, total_payments + 1)),
-        'monthly_payments': monthly_payment,
-        'interest_payment': first_interest_payment,
-        'remaining_balance': borrowed - first_principal_paid
-
-    })
-
-    for i in range(total_payments - 1):
-        schedule.loc[i + 1, 'interest_payment'] = schedule.loc[i,
-                                                               'remaining_balance'] * monthly_interest_rate
-        principal_paid = monthly_payment - \
-            schedule.loc[i + 1, 'interest_payment']
-        schedule.loc[i + 1, 'remaining_balance'] = schedule.loc[i,
-                                                                'remaining_balance'] - principal_paid
-
-    total_interest_paid = schedule['interest_payment'].sum()
-
-    return total_interest_paid
-
-def interest_bar_graph(est_price, down_payment, interest_rate, loan_term):
-
-    interest_rate_15 = interest_rate
-    interest_rate_30 = interest_rate
-
-    if loan_term == 30:
-        interest_rate_15 -= .75
-    else:
-        interest_rate_30 += .75
-
-    total_15 = calculate_total_interest(
-        est_price, down_payment, interest_rate_15, 15)
-    total_30 = calculate_total_interest(
-        est_price, down_payment, interest_rate_30, 30)
-
-    plt.figure(figsize=(2, 1))
-    yticks = ['15 year loan', '30 year loan']
-    values = [total_15, total_30]
-    def prop_func(x): return '${:,.2f}'.format(x)
-    labels = list(map(prop_func, values))
-    ypos = np.arange(len(yticks))
-    plt.yticks(ypos, yticks, fontsize=5)
-    plt.xticks([total_15, total_30], labels, fontsize=4)
-    plt.barh(ypos, values)
-    plt.title('Total Interest Paid for Different Loan Terms', fontsize=6)
-    plt.show()
+    return est_price, houses
 
 def amortization_schedule(est_price, down_payment, interest_rate, loan_term, extra=0):
 
-    def prop_func(x): return '${:,.2f}'.format(x)
     borrowed = est_price - down_payment
     interest_rate /= 100
     monthly_interest_rate = (1 + interest_rate)**(1 / 12) - 1
@@ -259,6 +200,13 @@ def amortization_schedule(est_price, down_payment, interest_rate, loan_term, ext
     new_total_interest_paid = schedule.loc[schedule['new_remaining_balance']
                                            > 0, 'new_interest_payment'].sum()
 
+    return schedule
+
+def burndown_chart(schedule, loan_term):
+
+    def prop_func(x): return '${:,.2f}'.format(x)
+    monthly_payment = schedule.loc[0, 'monthly_payments']
+
     plt.figure(figsize=(5, 3))
     plt.plot(schedule['date'], schedule['remaining_balance'],
              label='Original Terms', marker='o', markevery=72)
@@ -266,15 +214,15 @@ def amortization_schedule(est_price, down_payment, interest_rate, loan_term, ext
              label='With Extra Payments', marker='o', markevery=72)
     xpos = list(schedule.loc[::schedule.shape[0] - 1, 'date'])
     maturity_date = xpos[1]
+
+    # Preventing the xticks from overlapping
     df = schedule.loc[schedule['new_remaining_balance']
                       > monthly_payment, 'date']
-
     # Converting to better date format
     when_zero = list(df)[-1]
     #when_zero = datetime.datetime(when_zero.year, when_zero.month, when_zero.day)
     #when_zero = when_zero.strptime('%Y-%m-%d', '%m/%d/%Y')
 
-    # Preventing the xticks from overlapping
     if loan_term == 30:
         if df.shape[0] < 300:
             xpos.append(when_zero)
@@ -283,7 +231,7 @@ def amortization_schedule(est_price, down_payment, interest_rate, loan_term, ext
             xpos.append(when_zero)
 
     ypos = list(schedule.loc[::72, 'remaining_balance'])
-    plt.xticks(xpos, rotation=55)
+    plt.xticks(xpos, rotation=35)
     y_labels = list(map(prop_func, ypos))
     plt.yticks(ypos, y_labels)
     plt.ylim(0, schedule['remaining_balance'].max() + 10000)
@@ -291,8 +239,48 @@ def amortization_schedule(est_price, down_payment, interest_rate, loan_term, ext
     plt.title('Remaining Balance on Principal', fontsize='small')
     plt.show()
 
-    st.markdown(f"With an additional {prop_func(extra)} a month...")
-    st.markdown(
-        f"You will save {prop_func(old_total_interest_paid-new_total_interest_paid)} in total interest paid!")
-    st.markdown(
-        f"You will finish paying off the loan on {when_zero} instead of {maturity_date}")
+
+def interest_bar_graph(schedule):
+    monthly_payment = schedule.loc[0, 'monthly_payments']
+    original_interest_payment = schedule['interest_payment'].sum()
+    adjusted_interest_payment = schedule.loc[schedule['new_remaining_balance']
+                                             > monthly_payment, 'new_interest_payment'].sum()
+
+    plt.figure(figsize=(3, 2))
+    yticks = ['No Additional Payment', 'Additional Payments']
+    values = [original_interest_payment, adjusted_interest_payment]
+    def prop_func(x): return '${:,.2f}'.format(x)
+    x_labels = list(map(prop_func, values))
+    ypos = np.arange(len(yticks))
+    plt.yticks(ypos, yticks, fontsize=8)
+    plt.xticks([original_interest_payment, adjusted_interest_payment],
+               x_labels, fontsize=8, rotation=35)
+    plt.barh(ypos, values)
+    plt.title(
+        'Total Interest Paid Based on Extra Payments to the Principal', fontsize=8)
+    plt.show()
+
+
+def neighborhood_details(neighborhood_option, lot_size, home_size):
+    hoods = pd.read_csv('../Data/Neighborhoods_final.csv')
+
+    barWidth = .25
+    lot = float(hoods.loc[hoods['neighborhood'] ==
+                          neighborhood_option, 'lot_size'])
+    home = float(hoods.loc[hoods['neighborhood'] ==
+                           neighborhood_option, 'home_size'])
+    # st.write(type(home))
+    y1 = [lot, home]
+    y2 = [lot_size, home_size]
+    # Set position of bar on X axis
+    r1 = np.arange(len(y1))
+    r2 = [x + barWidth for x in r1]
+
+    # Make the plot
+    plt.bar(r1, y1, width=barWidth, edgecolor='white',
+            label='Average in Neighborhood')
+    plt.bar(r2, y2, width=barWidth, edgecolor='white', label='You\'re house')
+    plt.xticks([r + barWidth - .130 for r in range(len(y1))],
+               ['Lot Size', 'Home Size'])
+    plt.legend()
+    plt.show()
