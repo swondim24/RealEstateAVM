@@ -43,7 +43,7 @@ def monthsfromnow(months, from_date=None):
 
 
 def find_nearest_hoods(neighborhood_option):
-    hoods = pd.read_csv('../Data/Neighborhoods_final.csv')
+    hoods = pd.read_csv('Data/Neighborhoods_final.csv')
     lat = float(hoods.loc[hoods['neighborhood'] ==
                           neighborhood_option, 'latitude'])
     lng = float(hoods.loc[hoods['neighborhood'] ==
