@@ -40,7 +40,7 @@ home_size = st.sidebar.number_input(
 
 est_price, houses = find_nearest_properties(neighborhood_option, bedrooms,
                                             bathrooms, lot_size, home_size)
-
+down_payment_default = int(est_price * .2)
 expander1 = st.beta_expander('Neighborhood Details')
 df = houses[['Neighborhood', 'Lot Size', 'Home Size',
              'Bedrooms', 'Bathrooms', 'Date', 'Sale Price']]
@@ -51,7 +51,7 @@ expander1.pyplot(fig)
 expander2 = st.beta_expander('Financing')
 left, middle, right = expander2.beta_columns(3)
 down_payment = left.number_input(
-    label="Down Payment", format="%i", value=20000, max_value=5000000, step=1000)
+    label="Down Payment", format="%i", value=50000, max_value=5000000, step=1000)
 loan_term = middle.selectbox(
     "Loan Term",  [15, 30], 1)
 interest_rate = right.slider(
@@ -60,7 +60,10 @@ interest_rate = right.slider(
 payment = calculate_mortgage(
     est_price, down_payment, loan_term, interest_rate)
 
-mes1 = "*You\'re interest rate will be lower the less years there are on the term*"
+mes1 = f"""
+        *20% of the estimated price: {'${:,.2f}'.format(down_payment_default)}* \n
+        *You\'re interest rate will be lower the less years there are on the term*
+       """
 expander2.markdown(mes1)
 mes2 = f"## You're expected monthly payment is {'${:,.2f}'.format(payment)}"
 expander2.markdown(mes2)
