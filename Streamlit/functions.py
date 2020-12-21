@@ -58,8 +58,8 @@ def find_nearest_hoods(neighborhood_option):
 
 
 def find_similar_properties(neighborhood_option, bedrooms, bathrooms, lot_size, home_size, num=5.0):
-    neighborhoods = pd.read_csv('../Data/Neighborhoods_final.csv')
-    houses = pd.read_csv('../Data/houses_neighborhood_info.csv')
+    neighborhoods = pd.read_csv('Data/Neighborhoods_final.csv')
+    houses = pd.read_csv('Data/houses_neighborhood_info.csv')
     near = find_nearest_hoods(neighborhood_option)
     hood_lat = float(neighborhoods.loc[neighborhoods['neighborhood'] ==
                                        neighborhood_option, 'latitude'])
@@ -99,12 +99,12 @@ def calculate_mortgage(est_price, down_payment, loan_term, interest_rate):
 
 def find_nearest_properties(neighborhood_option, bedrooms=2, bathrooms=2, home_size=1500, lot_size=5000):
 
-    neighborhoods = pd.read_csv('../Data/Neighborhoods_final.csv')
+    neighborhoods = pd.read_csv('Data/Neighborhoods_final.csv')
     # load the model
-    loaded_model = pickle.load(open("../xgb_model.pickle.dat", "rb"))
+    loaded_model = pickle.load(open("xgb_model.pickle.dat", "rb"))
     cols_when_model_builds = loaded_model.get_booster().feature_names
     # Load the fitted kmeans object
-    kmeans = load_obj('../kmeans_neighborhood')
+    kmeans = load_obj('kmeans_neighborhood')
     kc = kmeans.cluster_centers_
     # This  is the geocoordinates of the neighborhood selected
     neighborhoods = neighborhoods.loc[neighborhoods['neighborhood']
@@ -262,7 +262,7 @@ def interest_bar_graph(schedule):
 
 
 def neighborhood_details(neighborhood_option, lot_size, home_size):
-    hoods = pd.read_csv('../Data/Neighborhoods_final.csv')
+    hoods = pd.read_csv('Data/Neighborhoods_final.csv')
 
     barWidth = .25
     lot = float(hoods.loc[hoods['neighborhood'] ==
