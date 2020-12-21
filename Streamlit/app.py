@@ -20,8 +20,8 @@ st.sidebar.write('<strong>Describe your ideal house</strong>',
                  unsafe_allow_html=True)
 
 # Load in the data
-neighborhoods = pd.read_csv('../Data/Neighborhoods_final.csv')
-houses = pd.read_csv('../Data/houses.csv')
+neighborhoods = pd.read_csv('Data/Neighborhoods_final.csv')
+houses = pd.read_csv('Data/houses.csv')
 
 
 neighborhood_option = st.sidebar.selectbox(
