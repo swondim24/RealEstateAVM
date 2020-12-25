@@ -4,7 +4,7 @@ import folium
 from folium import plugins
 from streamlit_folium import folium_static
 import time
-from functions2 import find_nearest_properties, calculate_mortgage, burndown_chart, interest_bar_graph, amortization_schedule, neighborhood_details
+from functions import find_nearest_properties, calculate_mortgage, burndown_chart, interest_bar_graph, amortization_schedule, neighborhood_details
 st.set_option('deprecation.showPyplotGlobalUse', False)
 
 import warnings
