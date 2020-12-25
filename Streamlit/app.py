@@ -4,7 +4,7 @@ import folium
 from folium import plugins
 from streamlit_folium import folium_static
 import time
-from functions import find_nearest_properties, calculate_mortgage, burndown_chart, interest_bar_graph, amortization_schedule, neighborhood_details
+from functions2 import find_nearest_properties, calculate_mortgage, burndown_chart, interest_bar_graph, amortization_schedule, neighborhood_details
 st.set_option('deprecation.showPyplotGlobalUse', False)
 
 import warnings
@@ -26,7 +26,7 @@ houses = pd.read_csv('Data/houses.csv')
 
 neighborhood_option = st.sidebar.selectbox(
     'Select a neighborhood you are interested in.',
-    neighborhoods['neighborhood'])
+    neighborhoods['neighborhood_name'])
 # Creating an side bar for the house features
 left_column, right_column = st.sidebar.beta_columns(2)
 bedrooms = left_column.number_input(

@@ -1,4 +1,3 @@
-Link: https://share.streamlit.io/swondim24/realestateavm/Streamlit/app.py
 # Project Overview
 * Created a tool that estimates the prices of Single Family Houses in Los Angeles that will help home buyers find their ideal house within their budget.
 * Scraped over 10,000 properties across LA County.
@@ -6,6 +5,7 @@ Link: https://share.streamlit.io/swondim24/realestateavm/Streamlit/app.py
 * Optimized a XGBoost regressor, Random Forest Regressor and a Linear Model using hyperopt to find the best model.
 * Built a client facing application using the Streamlit framework.
 
+Link: https://share.streamlit.io/swondim24/realestateavm/Streamlit/app.py
 ![Application Demo](Images/RealEstateAVM.gif)
 
 ### Code and Resources

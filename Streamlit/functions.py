@@ -44,9 +44,9 @@ def monthsfromnow(months, from_date=None):
 
 def find_nearest_hoods(neighborhood_option):
     hoods = pd.read_csv('Data/Neighborhoods_final.csv')
-    lat = float(hoods.loc[hoods['neighborhood'] ==
+    lat = float(hoods.loc[hoods['neighborhood_name'] ==
                           neighborhood_option, 'latitude'])
-    lng = float(hoods.loc[hoods['neighborhood'] ==
+    lng = float(hoods.loc[hoods['neighborhood_name'] ==
                           neighborhood_option, 'longitude'])
 
     hoods['distance'] = np.sqrt(
@@ -59,11 +59,11 @@ def find_nearest_hoods(neighborhood_option):
 
 def find_similar_properties(neighborhood_option, bedrooms, bathrooms, lot_size, home_size, num=5.0):
     neighborhoods = pd.read_csv('Data/Neighborhoods_final.csv')
-    houses = pd.read_csv('Data/houses_neighborhood_info.csv')
+    houses = pd.read_csv('Data/houses.csv')
     near = find_nearest_hoods(neighborhood_option)
-    hood_lat = float(neighborhoods.loc[neighborhoods['neighborhood'] ==
+    hood_lat = float(neighborhoods.loc[neighborhoods['neighborhood_name'] ==
                                        neighborhood_option, 'latitude'])
-    hood_lng = float(neighborhoods.loc[neighborhoods['neighborhood'] ==
+    hood_lng = float(neighborhoods.loc[neighborhoods['neighborhood_name'] ==
                                        neighborhood_option, 'longitude'])
     houses = houses[houses.neighborhood.isin(near)]
     clusters = int(float(houses.shape[0]) / num)
@@ -75,7 +75,7 @@ def find_similar_properties(neighborhood_option, bedrooms, bathrooms, lot_size, 
         np.array([[bedrooms, bathrooms, lot_size, home_size]])))
 
     houses = houses.loc[houses['cluster'] == pred, :].reset_index(drop=True)
-    houses = houses.rename(columns={'neighborhood': 'Neighborhood',
+    houses = houses.rename(columns={'neighborhood_name': 'Neighborhood',
                                     'lot_size': 'Lot Size',
                                     'home_size': 'Home Size',
                                     'bedrooms': 'Bedrooms',
@@ -107,7 +107,7 @@ def find_nearest_properties(neighborhood_option, bedrooms=2, bathrooms=2, home_s
     kmeans = load_obj('kmeans_neighborhood')
     kc = kmeans.cluster_centers_
     # This  is the geocoordinates of the neighborhood selected
-    neighborhoods = neighborhoods.loc[neighborhoods['neighborhood']
+    neighborhoods = neighborhoods.loc[neighborhoods['neighborhood_name']
                                       == neighborhood_option]
     neighborhoods[['home_size', 'lot_size', 'bedrooms', 'bathrooms']] = [
         home_size, lot_size, bedrooms, bathrooms]
@@ -115,7 +115,6 @@ def find_nearest_properties(neighborhood_option, bedrooms=2, bathrooms=2, home_s
     lat = neighborhoods.latitude
     map_filter = calculate_distances(neighborhoods, kc)
     neighborhoods = neighborhoods[cols_when_model_builds]
-    neighborhoods = neighborhoods.astype(float)
     est_price = int(loaded_model.predict(neighborhoods)**2)
     clean_price = '${:,}'.format(est_price)
     # Bring in similar houses
@@ -265,9 +264,9 @@ def neighborhood_details(neighborhood_option, lot_size, home_size):
     hoods = pd.read_csv('Data/Neighborhoods_final.csv')
 
     barWidth = .25
-    lot = float(hoods.loc[hoods['neighborhood'] ==
+    lot = float(hoods.loc[hoods['neighborhood_name'] ==
                           neighborhood_option, 'lot_size'])
-    home = float(hoods.loc[hoods['neighborhood'] ==
+    home = float(hoods.loc[hoods['neighborhood_name'] ==
                            neighborhood_option, 'home_size'])
     # st.write(type(home))
     y1 = [lot, home]
