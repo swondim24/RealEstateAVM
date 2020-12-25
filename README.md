@@ -6,6 +6,8 @@
 * Optimized a XGBoost regressor, Random Forest Regressor and a Linear Model using hyperopt to find the best model.
 * Built a client facing application using the Streamlit framework.
 
+![Application Demo](Images/RealEstateAVM.gif)
+
 ### Code and Resources
 **Python Version:** 3.7</br>
 **Packages:** pandas, numpy, matplotlib, seaborn, sklearn, BeautifulSoup, feature_engine, geopandas, hyperopt, XGBoost, pickle, folium</br>
@@ -17,12 +19,12 @@ Periodically scrape data from RealyTrac and obtained 25 features for over 19,000
 * Geolocation
 * Home Size
 * Lot Size
-* Bedrooms 
+* Bedrooms
 * Bathrooms
 * Neighborhood Information (school quality, crime index, etc.)
 
 ### **Data Cleaning**</br>
-In order to prepare the data for the model I needed to 
+In order to prepare the data for the model I needed to
 * Parse out bedroom and bathroom into their own columns.
 * Standardize the unit used for measuring home size and lot size by converting all properties values that were listed in acres into sqft.
 * Parse out the numeric data from sale price.
@@ -50,9 +52,9 @@ The sale price was heavily skewed to the right so I used a Power Transformer on 
 * Used Mean Absolute Percent Error (MAPE) as the evaluating metric.
 
 ### **Model Performance**
-* XGBoost Regressor:
+* XGBoost Regressor: 30.74%
 * Random Forest Regressor:
-* Linear Model:
+
 
 ### Productionization
 Built an application that estimates the prices of houses based on a number of features. The application allows the user to get a good idea of the home buying process in Los Angeles. I deployed the application using the Streamlit Framework.
