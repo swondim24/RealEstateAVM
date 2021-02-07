@@ -112,7 +112,7 @@ def find_nearest_properties(neighborhood_option, bedrooms=2, bathrooms=2, home_s
     # Load the neighborhoods dataframe
     neighborhoods = pd.read_csv('Data/Neighborhoods_final.csv')
     # load the model
-    loaded_model = pickle.load(open("xgb_model.pickle.dat", "rb"))
+    loaded_model = pickle.load(open("xgb_model.pickle", "rb"))
     # Capture the order of the colunm names
     cols_when_model_builds = loaded_model.get_booster().feature_names
     # Load the fitted kmeans object
