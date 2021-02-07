@@ -43,45 +43,56 @@ def monthsfromnow(months, from_date=None):
 
 
 def find_nearest_hoods(neighborhood_option):
+    # Load the necessary dataframe
     hoods = pd.read_csv('Data/Neighborhoods_final.csv')
+    # Extract the latitude and longitude of the selected neighborhood
     lat = float(hoods.loc[hoods['neighborhood_name'] ==
                           neighborhood_option, 'latitude'])
     lng = float(hoods.loc[hoods['neighborhood_name'] ==
                           neighborhood_option, 'longitude'])
-
+    # Find the distance between the selected neighborhood and the other neighborhoods
     hoods['distance'] = np.sqrt(
         (hoods.latitude - lat)**2 + (hoods.longitude - lng)**2)
 
+    # Sort the dataframe by descending order
     hoods.sort_values(by='distance', inplace=True)
 
-    return list(hoods['neighborhood'][:8])
+    return list(hoods['neighborhood_name'][:8])
 
 
 def find_similar_properties(neighborhood_option, bedrooms, bathrooms, lot_size, home_size, num=5.0):
+    # Load the necessary dataframes
     neighborhoods = pd.read_csv('Data/Neighborhoods_final.csv')
     houses = pd.read_csv('Data/houses.csv')
+    # Identify the nearest neighborhoods
     near = find_nearest_hoods(neighborhood_option)
-    hood_lat = float(neighborhoods.loc[neighborhoods['neighborhood_name'] ==
-                                       neighborhood_option, 'latitude'])
-    hood_lng = float(neighborhoods.loc[neighborhoods['neighborhood_name'] ==
-                                       neighborhood_option, 'longitude'])
-    houses = houses[houses.neighborhood.isin(near)]
+
+    # Filter the house dataframe to only include the nearest neighborhoods
+    houses = houses[houses.Neighborhood.isin(near)]
+
+    # Use KMeans clustering the group thehouses with the selected features
+    # The higer the number of clusters the lower number houses will be found similar
     clusters = int(float(houses.shape[0]) / num)
     kmeans = KMeans(n_clusters=clusters)
-    houses['cluster'] = kmeans.fit_predict(
-        houses[['bedrooms', 'bathrooms', 'lot_size', 'home_size']])
 
+    # Identify which cluster the selected house belongs to
+    houses['cluster'] = kmeans.fit_predict(
+        houses[['Bedrooms', 'Bathrooms', 'LotSize', 'HomeSize']])
+    # Extract the cluster number
     pred = int(kmeans.predict(
         np.array([[bedrooms, bathrooms, lot_size, home_size]])))
-
+    # Filter the house dataframe based on the cluster assignment
     houses = houses.loc[houses['cluster'] == pred, :].reset_index(drop=True)
+    # Rename the houses columns for better presentation
     houses = houses.rename(columns={'neighborhood_name': 'Neighborhood',
-                                    'lot_size': 'Lot Size',
-                                    'home_size': 'Home Size',
-                                    'bedrooms': 'Bedrooms',
-                                    'bathrooms': 'Bathrooms',
-                                    'date': 'Date',
-                                    'sale_price': 'Sale Price'})
+                                    'LotSize': 'Lot Size',
+                                    'HomeSize': 'Home Size',
+                                    'Bedrooms': 'Bedrooms',
+                                    'Bathrooms': 'Bathrooms',
+                                    #'date': 'Date',
+                                    'SalePrice': 'Sale Price'})
+
+    # Rename the index so that it isn't 0 indexed (for better presentation)
     houses.index = np.arange(1, len(houses) + 1)
 
     return houses
@@ -98,10 +109,11 @@ def calculate_mortgage(est_price, down_payment, loan_term, interest_rate):
 
 
 def find_nearest_properties(neighborhood_option, bedrooms=2, bathrooms=2, home_size=1500, lot_size=5000):
-
+    # Load the neighborhoods dataframe
     neighborhoods = pd.read_csv('Data/Neighborhoods_final.csv')
     # load the model
     loaded_model = pickle.load(open("xgb_model.pickle.dat", "rb"))
+    # Capture the order of the colunm names
     cols_when_model_builds = loaded_model.get_booster().feature_names
     # Load the fitted kmeans object
     kmeans = load_obj('kmeans_neighborhood')
@@ -109,14 +121,22 @@ def find_nearest_properties(neighborhood_option, bedrooms=2, bathrooms=2, home_s
     # This  is the geocoordinates of the neighborhood selected
     neighborhoods = neighborhoods.loc[neighborhoods['neighborhood_name']
                                       == neighborhood_option]
-    neighborhoods[['home_size', 'lot_size', 'bedrooms', 'bathrooms']] = [
+    neighborhoods[['HomeSize', 'LotSize', 'Bedrooms', 'Bathrooms']] = [
         home_size, lot_size, bedrooms, bathrooms]
+    # Capture the latitude and the longitude
     lng = neighborhoods.longitude
     lat = neighborhoods.latitude
+
+    # Find the distance between each house and each cluster center
     map_filter = calculate_distances(neighborhoods, kc)
+
+    # Organize the column name order to how the model has it
     neighborhoods = neighborhoods[cols_when_model_builds]
+
+    # Predict the estimated price of the described house
     est_price = int(loaded_model.predict(neighborhoods)**2)
     clean_price = '${:,}'.format(est_price)
+
     # Bring in similar houses
     houses = find_similar_properties(
         neighborhood_option, bedrooms, bathrooms, lot_size, home_size, 7)
@@ -142,7 +162,7 @@ def find_nearest_properties(neighborhood_option, bedrooms=2, bathrooms=2, home_s
 
     for index, row in houses.iterrows():
         popup = str(index) + ") " + str(row['Sale Price'])
-        folium.Marker(location=row[['latitude', 'longitude']],
+        folium.Marker(location=row[['Latitude', 'Longitude']],
                       popup=popup,
                       icon=folium.Icon(color='lightgray', icon='home', ico_size=(3, 3))).add_to(la)
 
@@ -219,8 +239,6 @@ def burndown_chart(schedule, loan_term):
                       > monthly_payment, 'date']
     # Converting to better date format
     when_zero = list(df)[-1]
-    #when_zero = datetime.datetime(when_zero.year, when_zero.month, when_zero.day)
-    #when_zero = when_zero.strptime('%Y-%m-%d', '%m/%d/%Y')
 
     if loan_term == 30:
         if df.shape[0] < 300:
@@ -265,9 +283,9 @@ def neighborhood_details(neighborhood_option, lot_size, home_size):
 
     barWidth = .25
     lot = float(hoods.loc[hoods['neighborhood_name'] ==
-                          neighborhood_option, 'lot_size'])
+                          neighborhood_option, 'LotSize'])
     home = float(hoods.loc[hoods['neighborhood_name'] ==
-                           neighborhood_option, 'home_size'])
+                           neighborhood_option, 'HomeSize'])
     # st.write(type(home))
     y1 = [lot, home]
     y2 = [lot_size, home_size]
