@@ -10,6 +10,9 @@ st.set_option('deprecation.showPyplotGlobalUse', False)
 import warnings
 warnings.filterwarnings('ignore')
 
+# Command used to examine streamlit on local computer
+#import os
+#os.chdir('../')
 # Create a function that will transform numeric values into currency
 def prop_func(x): return '${:,.2f}'.format(x)
 
