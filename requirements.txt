@@ -88,6 +88,7 @@ smmap==4.0.0
 soupsieve==2.2.1
 statsmodels==0.12.2
 streamlit==0.79.0
+streamlit-folium==0.3.0
 terminado==0.9.4
 testpath==0.4.4
 threadpoolctl==2.1.0
