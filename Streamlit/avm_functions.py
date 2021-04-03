@@ -165,8 +165,8 @@ def find_nearest_properties(neighborhood_option, bedrooms=2, bathrooms=2, home_s
             folium.Marker(location=row[['Latitude', 'Longitude']],
                           popup=popup,
                           icon=folium.Icon(color='lightgray', icon='home', icon_size=(3, 3))).add_to(la)
-         else:
-            continue
+        else:
+           continue
 
     folium_static(la)
     return est_price, houses
