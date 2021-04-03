@@ -4,21 +4,17 @@ import folium
 from folium import plugins
 from streamlit_folium import folium_static
 import time
-from functions import find_nearest_properties, calculate_mortgage, burndown_chart, interest_bar_graph, amortization_schedule, neighborhood_details
+from avm_functions import find_nearest_properties, calculate_mortgage, burndown_chart, interest_bar_graph, amortization_schedule, neighborhood_details
 st.set_option('deprecation.showPyplotGlobalUse', False)
 
 import warnings
 warnings.filterwarnings('ignore')
 
-# Command used to examine streamlit on local computer
-#import os
-#os.chdir('../')
 # Create a function that will transform numeric values into currency
 def prop_func(x): return '${:,.2f}'.format(x)
 
 
 st.title("How much is it really going to cost to buy a house in Los Angeles?")
-
 st.sidebar.write('<strong>Describe your ideal house</strong>',
                  unsafe_allow_html=True)
 
@@ -26,11 +22,12 @@ st.sidebar.write('<strong>Describe your ideal house</strong>',
 neighborhoods = pd.read_csv('Data/Neighborhoods_final.csv')
 houses = pd.read_csv('Data/houses.csv')
 
-
+# Select box for the user
 neighborhood_option = st.sidebar.selectbox(
     'Select a neighborhood you are interested in.',
     neighborhoods['neighborhood_name'])
-# Creating an side bar for the house features
+
+# Creating a side bar for the house features
 left_column, right_column = st.sidebar.beta_columns(2)
 bedrooms = left_column.number_input(
     label="Bedrooms", format="%i", value=2, max_value=8, min_value=1)
@@ -41,6 +38,8 @@ lot_size = st.sidebar.number_input(
 home_size = st.sidebar.number_input(
     label="Home Size (You can also type in a number)", format="%i", value=1500, step=250, max_value=25000)
 
+# Grab the estimated price for the house described by the user
+# As well as a dataframe of similar houses
 est_price, houses = find_nearest_properties(neighborhood_option, bedrooms,
                                             bathrooms, lot_size, home_size)
 down_payment_default = int(est_price * .2)
