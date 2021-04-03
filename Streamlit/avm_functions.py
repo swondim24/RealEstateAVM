@@ -160,10 +160,11 @@ def find_nearest_properties(neighborhood_option, bedrooms=2, bathrooms=2, home_s
                   popup=neighborhood_option).add_to(la)
 
     for index, row in houses.iterrows():
-        popup = str(index) + ") " + str(row['Sale Price'])
-        folium.Marker(location=row[['Latitude', 'Longitude']],
-                      popup=popup,
-                      icon=folium.Icon(color='lightgray', icon='home', icon_size=(3, 3))).add_to(la)
+        if row != None:
+            popup = str(index) + ") " + str(row['Sale Price'])
+            folium.Marker(location=row[['Latitude', 'Longitude']],
+                          popup=popup,
+                          icon=folium.Icon(color='lightgray', icon='home', icon_size=(3, 3))).add_to(la)
 
     folium_static(la)
     return est_price, houses
